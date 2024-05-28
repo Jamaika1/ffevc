@@ -87,6 +87,9 @@ typedef struct XeveContext {
     int hash;           // embed picture signature (HASH) for conformance checking in decoding
     int sei_info;       // embed Supplemental enhancement information while encoding
 
+    int aq_mode;        // embed adaptive Quantization method
+    int cutree;         // embed cutree for Adaptive Quantization
+
     int color_format;   // input data color format: currently only XEVE_CF_YCBCR420 is supported
 
     AVDictionary *xeve_params;
@@ -217,6 +220,12 @@ static int get_conf(AVCodecContext *avctx, XEVE_CDSC *cdsc)
         cdsc->param.vbv_bufsize = (int)(avctx->rc_buffer_size / 1000);
 
     cdsc->param.rc_type = xectx->rc_mode;
+
+    if (xectx->aq_mode >= 0)
+        cdsc->param.aq_mode = xectx->aq_mode;
+
+    if (xectx->cutree >= 0)
+        cdsc->param.cutree = xectx->cutree;
 
     if (xectx->rc_mode == XEVE_RC_CQP)
         cdsc->param.qp = xectx->qp;
@@ -574,6 +583,8 @@ static const AVOption libxeve_options[] = {
     { "crf", "Constant rate factor value for CRF rate control mode", OFFSET(crf), AV_OPT_TYPE_INT, { .i64 = 32 }, 10, 49, VE },
     { "hash", "Embed picture signature (HASH) for conformance checking in decoding", OFFSET(hash), AV_OPT_TYPE_INT, { .i64 = 0 }, 0, 1, VE },
     { "sei_info", "Embed SEI messages identifying encoder parameters and command line arguments", OFFSET(sei_info), AV_OPT_TYPE_INT, { .i64 = 0 }, 0, 1, VE },
+    { "aq-mode", "Adaptive Quantization method", OFFSET(aq_mode), AV_OPT_TYPE_INT, { .i64 = 0 }, 0, 1, VE, "aq_mode"},
+    { "cutree", "Enable cutree for Adaptive Quantization", OFFSET(cutree), AV_OPT_TYPE_INT, { .i64 = 0 }, 0, 1, VE, "cutree"},
     { "xeve-params",  "Override the xeve configuration using a :-separated list of key=value parameters", OFFSET(xeve_params), AV_OPT_TYPE_DICT, { 0 }, 0, 0, VE },
     { NULL }
 };
